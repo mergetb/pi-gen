@@ -24,13 +24,20 @@ BOOT_PART_START=$((ALIGN))
 BOOT_PART_SIZE=$(((BOOT_SIZE + ALIGN - 1) / ALIGN * ALIGN))
 ROOT_PART_START=$((BOOT_PART_START + BOOT_PART_SIZE))
 ROOT_PART_SIZE=$(((ROOT_SIZE + ROOT_MARGIN + ALIGN  - 1) / ALIGN * ALIGN))
-IMG_SIZE=$((BOOT_PART_START + BOOT_PART_SIZE + ROOT_PART_SIZE))
+# Add space for GPT secondary header (33 sectors * 512 bytes = 16896 bytes, round up to ALIGN)
+GPT_SECONDARY_SIZE=$((ALIGN))
+IMG_SIZE=$((BOOT_PART_START + BOOT_PART_SIZE + ROOT_PART_SIZE + GPT_SECONDARY_SIZE))
 
 truncate -s "${IMG_SIZE}" "${IMG_FILE}"
 
-parted --script "${IMG_FILE}" mklabel msdos
+# Create GPT partition table directly
+parted --script "${IMG_FILE}" mklabel gpt
 parted --script "${IMG_FILE}" unit B mkpart primary fat32 "${BOOT_PART_START}" "$((BOOT_PART_START + BOOT_PART_SIZE - 1))"
 parted --script "${IMG_FILE}" unit B mkpart primary ext4 "${ROOT_PART_START}" "$((ROOT_PART_START + ROOT_PART_SIZE - 1))"
+
+# Set specific PARTUUIDs
+sgdisk -u 1:10000000-0000-0000-0000-000000000001 "${IMG_FILE}"
+sgdisk -u 2:a0000000-0000-0000-0000-00000000000a "${IMG_FILE}"
 
 echo "Creating loop device..."
 cnt=0
