@@ -1,198 +1,102 @@
 #cloud-config
-package_update: true
-package_upgrade: true
-package_reboot_if_required: false
 
-runcmd:
-  errors: fail
+# This is the user-data configuration file for cloud-init. By default this sets
+# up an initial user called "ubuntu" with password "ubuntu", which must be
+# changed at first login. However, many additional actions can be initiated on
+# first boot from this file. The cloud-init documentation has more details:
+#
+# https://cloudinit.readthedocs.io/
+#
+# Please note that the YAML format employed by this file is sensitive to
+# differences in whitespace; if you are editing this file in an editor (like
+# Notepad) which uses literal tabs, take care to only use spaces for
+# indentation. See the following link for more details:
+#
+# https://en.wikipedia.org/wiki/YAML
+#
+# Some additional examples are provided in comments below the default
+# configuration.
 
-growpart:
-  mode: off
+## Set the system's hostname. Please note that, unless you have a local DNS
+## setup where the hostname is derived from DHCP requests (as with dnsmasq),
+## setting the hostname here will not make the machine reachable by this name.
+## You may also wish to install avahi-daemon (see the "packages:" key below)
+## to make your machine reachable by the .local domain
+#hostname: raspberrypi
 
-packages:
-  - curl
-  - gnupg
-  - openssh-client
-  - openssh-server
-  - tcpdump
-  - ethtool
-  - locales
+## Set up the keyboard layout. See localectl(1), in particular the various
+## list-x11-* sub-commands, to determine the available models, layouts,
+## variants, and options
+#keyboard:
+#  model: pc105
+#  layout: gb
+#  variant:
+#  options: ctrl:nocaps
 
-write_files:
-  - path: /etc/systemd/journald.conf
-    content: |
-      [Journal]
-      Storage=persistent
-      Compress=yes
-      SystemMaxUse=100M
-  - path: /etc/ssh/sshd_config
-    content: UseDNS no
-    append: yes
-  - path: /etc/systemd/system/machine-id-init.service
-    content: |
-      [Unit]
-      Description=Initialize machine id
+# Controls password authentication with the SSH daemon; the default here can
+# prevent logging into SSH with a password. Changing this is a security risk
+# and you should at the very least ensure a different default password is
+# specified above
+#ssh_pwauth: false
 
-      [Service]
-      Type=oneshot
-      ExecStart=/bin/systemd-machine-id-setup
+## On first boot, use ssh-import-id to give the specific users SSH access to
+## the default user
+#ssh_import_id:
+#- lp:my_launchpad_username
+#- gh:my_github_username
 
-      [Install]
-      WantedBy=multi-user.target
-  - path: /lib/systemd/system/foundryc.service
-    content: |
-      [Unit]
-      Description=Foundry client
-      Documentation=https://gitlab.com/mergetb/tech/foundry
+## Add users and groups to the system, and import keys with the ssh-import-id
+## utility
+#groups:
+#- robot: [robot]
+#- robotics: [robot]
+#- pi
+#
+#users:
+#- default
+#- name: robot
+#  gecos: Mr. Robot
+#  primary_group: robot
+#  groups: users
+#  ssh_import_id: foobar
+#  lock_passwd: false
+#  passwd: $5$hkui88$nvZgIle31cNpryjRfO9uArF7DYiBcWEnjqq7L1AQNN3
 
-      [Service]
-      ExecStart=/usr/local/bin/foundryc
-      Type=simple
-      Restart=on-failure
-      RestartSec=5
+## Update apt database and upgrade packages on first boot
+#package_update: true
+#package_upgrade: true
 
-      [Install]
-      WantedBy=multi-user.target
-    permissions: '0644'
-  - path: /etc/fstab
-    content: |
-      PARTUUID=a0000000-0000-0000-0000-00000000000a /         ext4    defaults        0       1
+## Install additional packages on first boot
+#packages:
+#- avahi-daemon
+#- rng-tools
+#- python3-gpiozero
+#- [python3-serial, 3.5-1]
 
-  - path: /etc/systemd/system/efivars-remount.service
-    content: |
-      [Unit]
-      Description=Mount efivars as a readonly mount
+## Write arbitrary files to the file-system (including binaries!)
+#write_files:
+#- path: /etc/default/console-setup
+#  content: |
+#    # Consult the console-setup(5) manual page.
+#    ACTIVE_CONSOLES="/dev/tty[1-6]"
+#    CHARMAP="UTF-8"
+#    VIDEOMODE=
+#    FONT="Lat15-Terminus18x10.psf.gz"
+#    FONTFACE=
+#    FONTSIZE=
+#    CODESET="Lat15"
+#  permissions: '0644'
+#  owner: root:root
+#- encoding: gzip
+#  path: /root/Makefile
+#  content: !!binary |
+#    H4sICF2DTWIAA01ha2VmaWxlAFNWCM8syVBILMjPyU/PTC1WKMlXiPB2dlFQNjSx5MpNteLi
+#    dLDiSoRQxYl5KeWZyRkgXrSCkoqKRmaKgm6pppKCbmqhgoFCrIKamkK1QmpyRr6Ckn92YqWS
+#    NdC80uQMBZhOa4VahZoaqIrwjMQSewXfxOxUhcwShcr80qLi1Jw0RSUuAIYfEJmVAAAA
+#  owner: root:root
+#  permissions: '0644'
 
-      [Service]
-      Type=oneshot
-      RemainAfterExit=yes
-      ExecStart=/bin/efivars-remount.sh
-
-      [Install]
-      WantedBy=multi-user.target
-    permissions: '0644'
-  - path: /bin/efivars-remount.sh
-    content: |
-        #!/bin/bash
-        mount -o remount,ro /sys/firmware/efi/efivars
-    permissions: '0700'
-  - path: /tmp/collect.sh
-    content: |
-        #!/bin/bash
-        set -e
-        set -x
-        mkdir /opt/collect;
-        chmod a+rw /opt/collect;
-        kernel=`ls -1 /boot/vmlinuz* | xargs basename -a | sort -rV | head -n1`;
-        initrd=`ls -1 /boot/init*.img* | xargs basename -a | sort -rV | head -n1`;
-        cp /boot/$kernel /opt/collect/;
-        cp /boot/$initrd /opt/collect/;
-        cd /opt/collect && sudo ln -s $kernel sled-kernel;
-        cd /opt/collect && sudo ln -s $initrd sled-initramfs;
-        chmod -R a+r /opt/collect;
-    permissions: '0700'
-  - path: /tmp/minimize.sh
-    content: |
-        #!/bin/bash
-        set -ex
-        dd if=/dev/zero of=/EMPTY bs=1M || :
-        rm -rf /EMPTY
-    permissions: '0700'
-  - path: /tmp/fstab
-    content: |
-        PARTUUID=10000000-0000-0000-0000-000000000001 /boot/efi vfat defaults 0 2
-        PARTUUID=a0000000-0000-0000-0000-00000000000a /         ext4 defaults 0 1
-  - path: /tmp/install-node-exporter.sh
-    content: |
-        #!/bin/bash
-        set -ex
-        cd /tmp
-        curl -L -O https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-arm64.tar.gz
-        tar xzf node_exporter-1.8.2.linux-arm64.tar.gz
-        sudo cp node_exporter-1.8.2.linux-arm64/node_exporter /usr/local/bin/
-        sudo chmod +x /usr/local/bin/node_exporter
-        sudo useradd -r -s /sbin/nologin node_exporter || true
-        rm -rf node_exporter-1.8.2.linux-arm64*
-    permissions: '0700'
-  - path: /etc/systemd/system/node_exporter.service
-    content: |
-        [Unit]
-        Description=Prometheus Node Exporter
-        After=network.target
-
-        [Service]
-        Type=simple
-        User=node_exporter
-        Group=node_exporter
-        ExecStart=/usr/local/bin/node_exporter
-        Restart=on-failure
-        RestartSec=5
-
-        [Install]
-        WantedBy=multi-user.target
-    permissions: '0644'
-  - path: /tmp/install-grub.sh
-    content: |
-        #!/bin/bash
-        set -ex
-        export DEBIAN_FRONTEND=noninteractive
-        apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" grub-efi-arm64
-    permissions: '0700'
-  - path: /tmp/efi.sh
-    content: |
-        #!/bin/bash
-        set -ex
-        mv /tmp/fstab /etc/fstab;
-        grub-install /dev/vda --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=merge;
-        systemctl daemon-reload;
-        systemctl enable efivars-remount.service;
-    permissions: '0700'
-
-runcmd:
-  - /tmp/install-grub.sh
-  - sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
-  - dpkg-reconfigure --frontend=noninteractive locales
-  - update-locale LANG=en_US.UTF-8
-  - localectl set-keymap us
-  - systemctl daemon-reload
-  - systemctl stop unattended-upgrades
-  - apt-get purge -y unattended-upgrades
-  - systemctl restart systemd-journald
-  - systemctl restart sshd
-  - rm -rf /etc/machine-id
-  - rm -rf /var/lib/dbus/machine-id
-  - touch /etc/machine-id
-  - chmod 644 /etc/systemd/system/machine-id-init.service
-  - systemctl enable machine-id-init.service
-  - rm -rf /etc/network/interfaces
-  - systemctl enable systemd-networkd
-  - curl -L https://gitlab.com/mergetb/tech/foundry/-/jobs/artifacts/main/raw/build/foundryc-arm64?job=make -o /usr/local/bin/foundryc
-  - chmod 755 /usr/local/bin/foundryc
-  - systemctl enable foundryc.service
-  - rm -f /etc/resolv.conf
-  - ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
-  - systemctl enable systemd-resolved
-  - sed -i "s/GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"apparmor=0 root=PARTUUID=a0000000-0000-0000-0000-00000000000a rootfstype=ext4 rw net.ifnames=0 biosdevname=0 console=tty1 console=ttyS0,115200n8 earlyprintk=ttyS0 8250.nr_uarts=1\"/g" /etc/default/grub
-  - update-grub
-  - DEBIAN_FRONTEND=noninteractive apt-get --fix-broken install -y
-  - apt-get autoremove -y
-  - apt-get clean
-  - apt-get autoclean
-  - rm -rf /var/lib/apt/lists/*
-  - /tmp/collect.sh
-  - /tmp/install-node-exporter.sh
-  - systemctl daemon-reload
-  - systemctl enable node_exporter.service
-  - systemctl start node_exporter.service
-  - /tmp/efi.sh
-  - cloud-init clean --logs
-  - touch /etc/cloud/cloud-init.disabled
-
-users:
-  - name: test
-    plain_text_passwd: test
-    lock_passwd: false
-    sudo: ['ALL=(ALL) NOPASSWD:ALL']
-    shell: /bin/bash
-    ssh_authorized_keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB9HQ/r3cMtGTJfOKRklWR32Y6TG43E8OIav4yYEeXSA test@cloud-init.mergetb
+## Run arbitrary commands at rc.local like time
+#runcmd:
+#- [ ls, -l, / ]
+#- [ sh, -xc, "echo $(date) ': hello world!'" ]
