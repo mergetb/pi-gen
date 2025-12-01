@@ -1,1 +1,1 @@
-console=serial0,115200 console=tty1 debug loglevel=8 earlyprintk=serial0,115200 earlycon=pl011,0x107d001000,115200n8 root=ROOTDEV rootfstype=ext4 rw -v net.ifnames=0 biosdevname=0
+console=tty1 console=serial0,115200 debug loglevel=8 earlyprintk=serial0,115200 earlycon=pl011,0x107d001000,115200n8 root=ROOTDEV rootfstype=ext4 rw -v net.ifnames=0 biosdevname=0

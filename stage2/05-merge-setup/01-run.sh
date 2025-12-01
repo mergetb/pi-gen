@@ -79,10 +79,18 @@ PARTUUID=a0000000-0000-0000-0000-00000000000a /         ext4    defaults,noatime
 PARTUUID=10000000-0000-0000-0000-000000000001 /boot/firmware         vfat    defaults        0       2
 EOF
 
+# Force built-in ethernet to eth0 (handles both end0 from kexec and eth0 from disk boot)
+cat > "${ROOTFS_DIR}/etc/udev/rules.d/70-persistent-net.rules" << 'EOF'
+# Force built-in macb interface to eth0 regardless of initial name
+SUBSYSTEM=="net", ACTION=="add", ENV{ID_NET_DRIVER}=="macb", NAME="eth0"
+EOF
+
 # Configure systemd-networkd to bring up all interfaces with DHCP
 cat > "${ROOTFS_DIR}/etc/systemd/network/20-wired-dhcp.network" << 'EOF'
 [Match]
-Name=eth* en*
+Name=e*
+#end0 for primary
+#ethX for usb
 
 [Network]
 DHCP=yes
@@ -112,6 +120,7 @@ systemctl enable systemd-networkd.socket
 systemctl enable systemd-resolved.service
 systemctl enable foundryc.service
 systemctl enable node_exporter.service
+systemctl enable serial-getty@ttyAMA0.service
 EOF
 
 # Purge unattended-upgrades and NetworkManager
@@ -131,7 +140,7 @@ rm -rf "${ROOTFS_DIR}/etc/network/interfaces"
 
 # Download foundryc binary
 on_chroot << EOF
-curl -L https://gitlab.com/mergetb/tech/foundry/-/jobs/artifacts/main/raw/build/foundryc-arm64?job=make -o /usr/local/bin/foundryc
+curl -L "https://gitlab.com/api/v4/projects/11436163/jobs/artifacts/v1.1.5/raw/build/foundryc-arm64?job=make" -o /usr/local/bin/foundryc
 chmod 755 /usr/local/bin/foundryc
 EOF
 

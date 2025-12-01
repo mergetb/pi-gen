@@ -1,4 +1,4 @@
-IMG_NAME="rpi-merge-11252025-trixie-armhf"
+IMG_NAME="rpi-merge-final-trixie-armhf"
 RELEASE="trixie"
 TARGET_HOSTNAME="彷徨う"
 LOCALE_DEFAULT="en_US.UTF-8"
