@@ -6,6 +6,7 @@ UNRELEASED:
   * Bug fix - crash when unloading system monitor plugin
   * Bug fix - crash when power-cycling audio devices
   * Bug fix - Bluetooth plugin icon not being hidden correctly on devices with no Bluetooth hardware
+  * Bug fix - crash in file manager which switching to a TTY
   * Raspberry Pi firmware 676efed1194de38975889a34276091da1f5aadd3
   * Linux kernel 6.12.47 - 359f37f0faefb712add32a39f98751aea67d5c1f
 2025-11-24:
