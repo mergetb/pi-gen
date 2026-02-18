@@ -1,5 +1,6 @@
+# on fedora it wants a fedora thing, so tell it we want docker.io
 ARG BASE_IMAGE=debian:bullseye
-FROM ${BASE_IMAGE}
+FROM docker.io/${BASE_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -8,7 +9,7 @@ RUN apt-get -y update && \
         git vim parted \
         quilt coreutils qemu-user-static debootstrap zerofree zip dosfstools e2fsprogs\
         libarchive-tools libcap2-bin rsync grep udev xz-utils curl xxd file kmod bc \
-        binfmt-support ca-certificates fdisk gpg pigz arch-test \
+        binfmt-support ca-certificates fdisk gpg pigz arch-test gdisk \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . /pi-gen/

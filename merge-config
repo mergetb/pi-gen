@@ -1,5 +1,6 @@
 IMG_NAME="rpi-merge-final-trixie-armhf"
 RELEASE="trixie"
+DEPLOY_COMPRESSION="xz"
 TARGET_HOSTNAME="彷徨う"
 LOCALE_DEFAULT="en_US.UTF-8"
 KEYBOARD_KEYMAP="us"

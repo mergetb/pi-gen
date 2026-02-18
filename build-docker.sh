@@ -82,15 +82,11 @@ fi
 # Modify original build-options to allow config file to be mounted in the docker container
 BUILD_OPTS="$(echo "${BUILD_OPTS:-}" | sed -E 's@\-c\s?([^ ]+)@-c /config@')"
 
-# Check the arch of the machine we're running on. If it's 64-bit, use a 32-bit base image instead
-case "$(uname -m)" in
-  x86_64|aarch64)
-    BASE_IMAGE=i386/debian:trixie
-    ;;
-  *)
-    BASE_IMAGE=debian:trixie
-    ;;
-esac
+# only set BASE_IMAGE if not already set
+# we want to use bullseye due to gpg issues with rpi cert being sha1
+if [ -z "${BASE_IMAGE}" ]; then
+  BASE_IMAGE=debian:bullseye
+fi
 ${DOCKER} build --build-arg BASE_IMAGE=${BASE_IMAGE} -t pi-gen "${DIR}"
 
 if [ "${CONTAINER_EXISTS}" != "" ]; then
@@ -140,12 +136,22 @@ if [[ "${binfmt_misc_required}" == "1" ]]; then
 fi
 
 trap 'echo "got CTRL+C... please wait 5s" && ${DOCKER} stop -t 5 ${DOCKER_CMDLINE_NAME}' SIGINT SIGTERM
+
+# create directories if not exists
+mkdir -p "${DIR}/work" "${DIR}/deploy"
+
+# on fedora we need to give selinux perms
 time ${DOCKER} run \
   $DOCKER_CMDLINE_PRE \
   --name "${DOCKER_CMDLINE_NAME}" \
   --privileged \
+  --cap-add=SYS_ADMIN \
+  --cap-add=MKNOD \
+  --device-cgroup-rule='b 7:* rmw' \
   ${PIGEN_DOCKER_OPTS} \
   --volume "${CONFIG_FILE}":/config:ro \
+  --volume "${DIR}/work":/pi-gen/work:Z \
+  --volume "${DIR}/deploy":/pi-gen/deploy:Z \
   -e "GIT_HASH=${GIT_HASH}" \
   $DOCKER_CMDLINE_POST \
   pi-gen \

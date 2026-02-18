@@ -1,5 +1,10 @@
 #!/bin/bash -e
 
+# Restore working DNS for downloads (systemd-resolved package broke it)
+# We'll set up the proper symlink at the end
+rm -f "${ROOTFS_DIR}/etc/resolv.conf"
+cp /etc/resolv.conf "${ROOTFS_DIR}/etc/resolv.conf"
+
 # Configure journald
 cat > "${ROOTFS_DIR}/etc/systemd/journald.conf" << 'EOF'
 [Journal]
@@ -144,12 +149,6 @@ curl -L "https://gitlab.com/api/v4/projects/11436163/jobs/artifacts/v1.1.5/raw/b
 chmod 755 /usr/local/bin/foundryc
 EOF
 
-# Setup resolv.conf symlink
-rm -f "${ROOTFS_DIR}/etc/resolv.conf"
-on_chroot << EOF
-ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
-EOF
-
 # Download and install node_exporter
 on_chroot << EOF
 cd /tmp
@@ -183,4 +182,10 @@ EOF
 
 on_chroot << EOF
 touch /etc/cloud/cloud-init.disabled
+EOF
+
+# Setup resolv.conf symlink for runtime (after all downloads complete)
+rm -f "${ROOTFS_DIR}/etc/resolv.conf"
+on_chroot << EOF
+ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
 EOF
