@@ -1,0 +1,8 @@
+curl
+gnupg
+openssh-client
+openssh-server
+tcpdump
+ethtool
+locales
+systemd-resolved

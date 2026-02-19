@@ -13,36 +13,33 @@ dtparam=audio=on
 # Additional overlays and parameters are documented
 # /boot/firmware/overlays/README
 
-# Automatically load overlays for detected cameras
-camera_auto_detect=1
-
-# Automatically load overlays for detected DSI displays
-display_auto_detect=1
-
 # Automatically load initramfs files, if found
 auto_initramfs=1
-
-# Enable DRM VC4 V3D driver
-dtoverlay=vc4-kms-v3d
-max_framebuffers=2
-
-# Don't have the firmware create an initial video= setting in cmdline.txt.
-# Use the kernel's default instead.
-disable_fw_kms_setup=1
-
-# Disable compensation for displays with overscan
-disable_overscan=1
 
 # Run as fast as firmware / board allows
 arm_boost=1
 
-[cm4]
-# Enable host mode on the 2711 built-in XHCI USB controller.
-# This line should be removed if the legacy DWC2 controller is required
-# (e.g. for USB device mode) or if USB support is not required.
-otg_mode=1
+# UART/Serial Console Debugging
+enable_uart=1                    # Enable primary UART (GPIO 14/15)
+uart_2ndstage=1                  # Enable UART output from bootloader
+console=serial0,115200           # Kernel console on serial
 
-[cm5]
-dtoverlay=dwc2,dr_mode=host
+# Boot Verbosity
+bootcode_delay=5                 # Delay in seconds (for reading messages)
+boot_delay=1                     # Additional delay after GPU firmware loads
+boot_delay_ms=1000              # Same as above but in milliseconds
 
-[all]
+# Display boot messages on screen
+disable_splash=1                 # Disable rainbow splash screen
+
+# GPIO Status
+gpio_pin_status=1               # Show GPIO pin status during boot
+
+dtdebug=1                       # Enable device tree debugging
+
+# Network Boot Debug (for your HTTP boot scenario)
+dhcp_timeout=45000              # Already in your EEPROM config
+dhcp_option_97=0                # Client identifier (optional)
+
+# dont allow users to write to eeprom and brick us
+eeprom_write_protect=1
