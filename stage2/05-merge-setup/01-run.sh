@@ -181,6 +181,7 @@ apt-get autoremove -y
 EOF
 
 on_chroot << EOF
+mkdir -p /etc/cloud
 touch /etc/cloud/cloud-init.disabled
 EOF
 
