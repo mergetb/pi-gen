@@ -101,6 +101,12 @@ fi
 CMDLINE_FILE="${STAGE_WORK_DIR}/${IMG_FILENAME}${IMG_SUFFIX}-cmdline.txt"
 cp "${ROOTFS_DIR}/boot/firmware/cmdline.txt" "${CMDLINE_FILE}"
 
+# Copy kernel and initramfs to staging for deploy (Pi 5 uses v8/64-bit)
+KERNEL_FILE="${STAGE_WORK_DIR}/kernel"
+INITRAMFS_FILE="${STAGE_WORK_DIR}/initramfs"
+cp "${ROOTFS_DIR}/boot/firmware/kernel8.img" "${KERNEL_FILE}"
+cp "${ROOTFS_DIR}/boot/firmware/initramfs8" "${INITRAMFS_FILE}"
+
 ROOT_DEV="$(awk "\$2 == \"${ROOTFS_DIR}\" {print \$1}" /etc/mtab)"
 
 unmount "${ROOTFS_DIR}"
@@ -147,3 +153,5 @@ if [ -f "${BMAP_FILE}" ]; then
 fi
 cp "$INFO_FILE" "$DEPLOY_DIR/"
 cp "$CMDLINE_FILE" "$DEPLOY_DIR/"
+cp "$KERNEL_FILE" "$DEPLOY_DIR/"
+cp "$INITRAMFS_FILE" "$DEPLOY_DIR/"
