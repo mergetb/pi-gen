@@ -97,6 +97,10 @@ if hash syft 2>/dev/null; then
 		-o spdx-json="${SBOM_FILE}"
 fi
 
+# Copy the evaluated cmdline.txt (with PARTUUID substituted) to staging for deploy
+CMDLINE_FILE="${STAGE_WORK_DIR}/${IMG_FILENAME}${IMG_SUFFIX}-cmdline.txt"
+cp "${ROOTFS_DIR}/boot/firmware/cmdline.txt" "${CMDLINE_FILE}"
+
 ROOT_DEV="$(awk "\$2 == \"${ROOTFS_DIR}\" {print \$1}" /etc/mtab)"
 
 unmount "${ROOTFS_DIR}"
@@ -142,3 +146,4 @@ if [ -f "${BMAP_FILE}" ]; then
 	cp "$BMAP_FILE" "$DEPLOY_DIR/"
 fi
 cp "$INFO_FILE" "$DEPLOY_DIR/"
+cp "$CMDLINE_FILE" "$DEPLOY_DIR/"
