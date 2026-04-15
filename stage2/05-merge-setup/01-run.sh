@@ -90,17 +90,6 @@ cat > "${ROOTFS_DIR}/etc/udev/rules.d/70-persistent-net.rules" << 'EOF'
 SUBSYSTEM=="net", ACTION=="add", ENV{ID_NET_DRIVER}=="macb", NAME="eth0"
 EOF
 
-# Configure systemd-networkd to bring up all interfaces with DHCP
-cat > "${ROOTFS_DIR}/etc/systemd/network/20-wired-dhcp.network" << 'EOF'
-[Match]
-Name=e*
-#end0 for primary
-#ethX for usb
-
-[Network]
-DHCP=yes
-EOF
-
 # Configure locales
 on_chroot << EOF
 sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
