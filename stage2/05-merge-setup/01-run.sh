@@ -134,7 +134,7 @@ rm -rf "${ROOTFS_DIR}/etc/network/interfaces"
 
 # Download foundryc binary
 on_chroot << EOF
-curl -L "https://gitlab.com/api/v4/projects/11436163/jobs/artifacts/v1.1.5/raw/build/foundryc-arm64?job=make" -o /usr/local/bin/foundryc
+curl -L "https://gitlab.com/api/v4/projects/11436163/jobs/artifacts/v1.1.7/raw/build/foundryc-arm64?job=make" -o /usr/local/bin/foundryc
 chmod 755 /usr/local/bin/foundryc
 EOF
 
