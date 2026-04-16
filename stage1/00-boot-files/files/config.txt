@@ -47,3 +47,7 @@ dhcp_option_97=0                # Client identifier (optional)
 
 # dont allow users to write to eeprom and brick us
 eeprom_write_protect=1
+
+[pi5]
+kernel=kernel8.img
+arm_64bit=1
