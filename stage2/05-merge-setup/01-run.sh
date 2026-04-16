@@ -117,10 +117,12 @@ systemctl enable node_exporter.service
 systemctl enable serial-getty@ttyAMA0.service
 EOF
 
-# Purge unattended-upgrades and NetworkManager
+# Purge unattended-upgrades, NetworkManager, and rpi-swap
 on_chroot << EOF
 apt-get purge -y unattended-upgrades || true
 apt-get purge -y network-manager || true
+apt-get purge -y rpi-swap || true
+rm -f /var/swap
 apt-get autoremove -y
 EOF
 
