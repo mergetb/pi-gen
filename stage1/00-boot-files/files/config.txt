@@ -20,6 +20,9 @@ dtparam=audio=on
 # Automatically load initramfs files, if found
 auto_initramfs=1
 
+# Run in 64-bit mode
+arm_64bit=1
+
 # Run as fast as firmware / board allows
 arm_boost=1
 
@@ -49,5 +52,6 @@ dhcp_option_97=0                # Client identifier (optional)
 eeprom_write_protect=1
 
 [pi5]
+# Force the 4K-page-size kernel instead of the default 16K kernel_2712;
+# some userspace (jemalloc-based apps, certain Python wheels) breaks on 16K pages
 kernel=kernel8.img
-arm_64bit=1

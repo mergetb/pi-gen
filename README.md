@@ -6,8 +6,9 @@ which was in turn derived from the Raspbian project.
 **Note**: Raspberry Pi OS 32 bit images are based primarily on Raspbian, while
 Raspberry Pi OS 64 bit images are based primarily on Debian.
 
-**Note**: 32 bit images should be built from the `master` branch.
-64 bit images should be built from the `arm64` branch.
+**Note**: unlike upstream pi-gen, this fork's `master` branch builds 64 bit
+(arm64) images. Upstream keeps 32 bit builds on `master` and 64 bit builds on
+its `arm64` branch.
 
 ## Dependencies
 
@@ -420,12 +421,8 @@ follows:
 # Troubleshooting
 
 ## `64 Bit Systems`
-A 64 bit image can be generated from the `arm64` branch in this repository. Just
-replace the command from [this section](#getting-started-with-building-your-images)
-by the one below, and follow the rest of the documentation:
-```bash
-git clone --branch arm64 https://github.com/RPI-Distro/pi-gen.git
-```
+This fork builds 64 bit (arm64) images directly from the `master` branch
+(upstream pi-gen keeps its 64 bit build on a separate `arm64` branch).
 
 If you want to generate a 64 bits image from a Raspberry Pi running a 32 bits
 version, you need to add `arm_64bit=1` to your `config.txt` file and reboot your

@@ -1,4 +1,4 @@
-IMG_NAME="rpi-merge-final-trixie-armhf"
+IMG_NAME="rpi-merge-final-trixie-arm64"
 RELEASE="trixie"
 DEPLOY_COMPRESSION="xz"
 TARGET_HOSTNAME="彷徨う"
